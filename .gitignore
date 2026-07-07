@@ -1,0 +1,20 @@
+# Python cache files
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Local training/evaluation outputs
+history/
+WITT_model/
+*.model
+*.pt
+*.pth
+
+# Local editor/system files
+.DS_Store
+.idea/
+.vscode/
