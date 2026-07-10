@@ -13,7 +13,7 @@ import argparse
 from loss.distortion import *
 import time
 
-parser = argparse.ArgumentParser(description='WITT')
+parser = argparse.ArgumentParser(description='WITT 4-stage no-channel')
 parser.add_argument('--training', action='store_true', default=True,
                     help='training or testing')
 parser.add_argument('--test', dest='training', action='store_false',
@@ -27,7 +27,7 @@ parser.add_argument('--testset', type=str, default='kodak',
 parser.add_argument('--distortion-metric', type=str, default='MSE',
                     choices=['MSE', 'MS-SSIM'],
                     help='evaluation metrics')
-parser.add_argument('--C', type=int, default=96,
+parser.add_argument('--C', type=int, default=32,
                     help='bottleneck dimension')
 args = parser.parse_args()
 
@@ -83,16 +83,16 @@ class config():
         elif args.testset == 'DIV2K':
             test_data_dir = ["/home/lan/data/DIV2K_valid_HR/"]
         batch_size = 16
-        downsample = 5
+        downsample = 4
         encoder_kwargs = dict(
             img_size=(image_dims[1], image_dims[2]), patch_size=2, in_chans=3,
-            embed_dims=[128, 192, 256, 320, 384], depths=[2, 2, 4, 4, 2], num_heads=[4, 6, 8, 10, 12],
+            embed_dims=[128, 192, 256, 320], depths=[2, 2, 6, 2], num_heads=[4, 6, 8, 10],
             C=args.C, window_size=8, mlp_ratio=4., qkv_bias=True, qk_scale=None,
             norm_layer=nn.LayerNorm, patch_norm=True,
         )
         decoder_kwargs = dict(
             img_size=(image_dims[1], image_dims[2]),
-            embed_dims=[384, 320, 256, 192, 128], depths=[2, 4, 4, 2, 2], num_heads=[12, 10, 8, 6, 4],
+            embed_dims=[320, 256, 192, 128], depths=[2, 6, 2, 2], num_heads=[10, 8, 6, 4],
             C=args.C, window_size=8, mlp_ratio=4., qkv_bias=True, qk_scale=None,
             norm_layer=nn.LayerNorm, patch_norm=True,
         )
@@ -307,7 +307,7 @@ if __name__ == '__main__':
     logger.info('TensorBoard logdir: {}'.format(config.tensorboard))
     torch.manual_seed(seed=config.seed)
     net = NoChannelWITT(args, config)
-    # The 5-stage / C=32 architecture is not compatible with old C=96 checkpoints.
+    # This no-channel architecture matches the 4-stage DIV2K layout in train.py.
     # model_path = "./WITT_model/WITT_WO_AWGN_DIV2K_fixed_snr10_psnr_C96.model"
     # load_weights(model_path)
     net = net.cuda()
